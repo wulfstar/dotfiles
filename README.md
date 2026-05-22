@@ -7,14 +7,16 @@ Useful Linux aliases and bash functions that can be sourced into any shell envir
 Bootstrap with `wget`:
 
 ```bash
-wget -qO- https://raw.githubusercontent.com/wulfstar/dotfiles/main/install.sh | bash
+bash -c 'set -euo pipefail; wget -qO- https://raw.githubusercontent.com/wulfstar/dotfiles/main/install.sh | bash'
 ```
 
 Or with `curl`:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/wulfstar/dotfiles/main/install.sh | bash
+bash -c 'set -euo pipefail; curl -fsSL https://raw.githubusercontent.com/wulfstar/dotfiles/main/install.sh | bash'
 ```
+
+Using `pipefail` prevents a missing or inaccessible bootstrap script from looking like a successful no-op.
 
 The installer clones this repo with HTTPS into `$HOME/.dotfiles`, adds this source line to `~/.bashrc`, and leaves the repo ready for future updates:
 

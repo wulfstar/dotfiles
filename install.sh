@@ -5,6 +5,8 @@ DOTFILES_HTTPS_REMOTE="${DOTFILES_HTTPS_REMOTE:-https://github.com/wulfstar/dotf
 DOTFILES_DIR="${DOTFILES_DIR:-$HOME/.dotfiles}"
 DOTFILES_SOURCE_LINE='[ -f "$HOME/.dotfiles/dotfiles.sh" ] && source "$HOME/.dotfiles/dotfiles.sh"'
 
+printf 'dotfiles installer starting...\n'
+
 require() {
   command -v "$1" >/dev/null 2>&1 || {
     printf 'install.sh: missing required command: %s\n' "$1" >&2
