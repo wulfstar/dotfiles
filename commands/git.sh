@@ -6,7 +6,7 @@ d-groot() { # Print the current git repository root
   git rev-parse --show-toplevel 2>/dev/null
 }
 
-d-ginfo() { # Git summary: branch, upstream (if set), ↑ahead/↓behind, working tree (M/U), and short graph or status for quick pull/rebase/push decisions
+d-ginfo() { # Git summary: branch, upstream, ahead/behind, working tree, pull/push hints
     local branch upstream upstream_full ahead behind remote_ahead remote_behind modified untracked remote_url tracking remote_ref
 
     local reset="\e[0m"
