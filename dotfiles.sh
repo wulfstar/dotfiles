@@ -39,11 +39,6 @@ _dot_repo() {
   [ -d "$DOTFILES_DIR/.git" ] || _dot_die "not a git repo: $DOTFILES_DIR"
 }
 
-_dot_git() {
-  _dot_repo || return 1
-  git -C "$DOTFILES_DIR" "$@"
-}
-
 # --- Discovery ---------------------------------------------------------------
 
 d-help() { # List all d- commands with descriptions
