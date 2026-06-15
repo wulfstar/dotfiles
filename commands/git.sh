@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 
-...groot() {
+# Git information helpers. These operate on the current directory's repo.
+
+d-groot() { # Print the current git repository root
   git rev-parse --show-toplevel 2>/dev/null
 }
 
-...ginfo() {
+d-ginfo() { # Show branch, remotes, upstream, dirty state, and recent commits
   local root branch upstream
 
-  root="$(...groot)" || { printf 'Not inside a git repository.\n' >&2; return 1; }
+  root="$(d-groot)" || { printf 'Not inside a git repository.\n' >&2; return 1; }
   branch="$(git -C "$root" branch --show-current 2>/dev/null)"
   upstream="$(git -C "$root" rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null)"
 
@@ -21,6 +23,3 @@
   printf '\nRecent commits:\n'
   git -C "$root" log --oneline --decorate --max-count=8
 }
-
-_dot_register "...groot" "Print the current git repository root"
-_dot_register "...ginfo" "Show branch, remotes, upstream, dirty state, and recent commits"

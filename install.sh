@@ -3,6 +3,7 @@ set -euo pipefail
 
 DOTFILES_HTTPS_REMOTE="${DOTFILES_HTTPS_REMOTE:-https://github.com/wulfstar/dotfiles.git}"
 DOTFILES_DIR="${DOTFILES_DIR:-$HOME/.dotfiles}"
+# shellcheck disable=SC2016  # literal on purpose: $HOME must expand in the user's shell, not here
 DOTFILES_SOURCE_LINE='[ -f "$HOME/.dotfiles/dotfiles.sh" ] && source "$HOME/.dotfiles/dotfiles.sh"'
 
 printf 'dotfiles installer starting...\n'
@@ -69,5 +70,5 @@ install_source_line
 
 printf '\nInstall complete. Next steps:\n'
 printf '  source ~/.bashrc\n'
-printf '  ... commands\n'
-printf '  ... status\n'
+printf '  d-help\n'
+printf '  d-status\n'

@@ -1,6 +1,8 @@
 # dotfiles
 
-Useful Linux aliases and bash functions that can be sourced into any shell environment.
+Useful Linux bash helpers that can be sourced into any shell environment. Every
+command is a single `d-` prefixed function, so you can discover them all with
+tab completion: type `d-` then press `<Tab>`.
 
 ## Install
 
@@ -30,72 +32,92 @@ Reload your shell after install:
 source ~/.bashrc
 ```
 
-## Dotfiles Command
+## Discovering commands
 
-The sourced environment provides a `...` command for managing this repo:
+Every command starts with `d-`. Type the prefix and press `<Tab>` to list them:
 
 ```bash
-... help
-... commands
-... status
-... update
-... remote show
-... remote ssh
-... push
+d-<Tab>
+```
+
+Or run `d-help` for the same list with one-line descriptions:
+
+```bash
+d-help
 ```
 
 When sourced by an interactive shell, the environment prints:
 
 ```text
-Dotfiles loaded. Run '... help' or '... commands' for more information.
+Dotfiles loaded. Type 'd-' then <Tab> to list commands, or run 'd-help'.
 ```
 
 Set `DOTFILES_QUIET=1` before sourcing to suppress that message.
 
-Useful subcommands:
+## Commands
+
+Manage this dotfiles repo (these act on `$HOME/.dotfiles`):
 
 ```text
-... commands       List loaded dotfiles commands with one-line descriptions
-... status         Show git status for the dotfiles repo
-... update         Pull latest dotfiles changes
-... reload         Re-source dotfiles.sh in the current shell
-... remote ssh     Switch origin from HTTPS to SSH after auth is configured
-... remote https   Switch origin back to HTTPS
-... remote test    Test current origin connectivity
+d-help            List all commands with descriptions
+d-edit            Open the dotfiles repo in $EDITOR
+d-path            Print the dotfiles repo path
+d-status          Show dotfiles repo git status
+d-update          Pull latest dotfiles changes (fast-forward only)
+d-add <path>      Stage a dotfiles repo path
+d-commit <msg>    Commit staged dotfiles changes
+d-push            Push dotfiles changes
+d-sync            Pull with rebase, then push
+d-reload          Re-source dotfiles.sh in the current shell
+d-bootstrap       Re-run install.sh
 ```
 
-## Adding Commands
+General helpers:
 
-Add new functions under `commands/*.sh` and register them with a short description:
+```text
+d-ff <pattern> [path]       Find files by name under a path
+d-ftext <pattern> [path]    Search file contents under a path
+d-groot                     Print the current git repository root
+d-ginfo                     Show a git project summary
+d-certinfo <cert.pem>       Show certificate information
+d-certdates <cert.pem>      Show certificate validity dates
+d-tlsinfo <host> [port]     Inspect a remote TLS certificate
+d-randhex [bytes]           Generate random hex bytes
+```
+
+## Adding a command
+
+Write one function in any `commands/*.sh` file. Put a `#` comment on the same
+line as the opening brace; that text becomes its `d-help` description:
 
 ```bash
-...mycommand() {
+d-greet() { # Print a greeting
   printf 'hello\n'
 }
-
-_dot_register "...mycommand" "Print a greeting"
 ```
 
-Then commit and push from any sourced shell:
+That is the only edit. The function loads on your next shell (or after
+`d-reload`), tab-completes as `d-greet`, and appears in `d-help`. There is no
+registration step and no central dispatcher to update.
+
+Pick the topic file that fits (`commands/git.sh`, `commands/search.sh`,
+`commands/crypto.sh`, `commands/manage.sh`) or create a new
+`commands/<topic>.sh`. Then commit and push from any sourced shell:
 
 ```bash
-... add commands/mycommand.sh
-... commit "Add mycommand helper"
-... push
+d-add commands/git.sh
+d-commit "Add d-greet helper"
+d-push
 ```
 
-## Included Helpers
+## How it works
 
-```text
-...ff <pattern> [path]       Find files by name under a path
-...ftext <pattern> [path]    Search file contents under a path
-...groot                     Print the current git repository root
-...ginfo                     Show git project summary
-...certinfo <cert.pem>       Show certificate information
-...certdates <cert.pem>      Show certificate validity dates
-...tlsinfo <host> [port]     Inspect a remote TLS certificate
-...randhex [bytes]           Generate random hex bytes
-```
+- `dotfiles.sh` sets `$DOTFILES_DIR`, defines a few `_dot_*` helper functions and
+  `d-help`, then sources every `commands/*.sh` file.
+- Each command is a plain bash function named `d-<name>`. Internal helpers use a
+  `_dot_` prefix so they stay out of `d-<Tab>` completion.
+- `d-help` lists commands dynamically with `compgen` and reads descriptions from
+  the source files, so there is nothing to keep in sync.
 
 ## Verify
 

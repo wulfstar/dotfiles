@@ -5,15 +5,22 @@ repo_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 
 DOTFILES_QUIET=1 source "$repo_dir/dotfiles.sh"
 
-command -v ... >/dev/null
-command -v ...ff >/dev/null
-command -v ...ftext >/dev/null
-command -v ...ginfo >/dev/null
-command -v ...groot >/dev/null
-command -v ...certinfo >/dev/null
-command -v ...tlsinfo >/dev/null
+command -v d-help >/dev/null
+command -v d-edit >/dev/null
+command -v d-status >/dev/null
+command -v d-ff >/dev/null
+command -v d-ftext >/dev/null
+command -v d-ginfo >/dev/null
+command -v d-groot >/dev/null
+command -v d-certinfo >/dev/null
+command -v d-tlsinfo >/dev/null
 
-... commands >/dev/null
-... path >/dev/null
+d-help >/dev/null
+d-path >/dev/null
+
+# d-help must list commands and their descriptions dynamically.
+help_output="$(d-help)"
+grep -q 'd-ff' <<<"$help_output"
+grep -q 'Find files by name' <<<"$help_output"
 
 printf 'Smoke test passed.\n'
