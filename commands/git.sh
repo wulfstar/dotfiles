@@ -102,3 +102,39 @@ d-sync() { # Pull with rebase, then push
   git pull --rebase && git push
 }
 
+d-moveseq() {
+    local src="$1"
+    local dest_dir="$2"
+
+    if [[ ! -f "$src" ]]; then
+        echo "Error: source file '$src' does not exist" >&2
+        return 1
+    fi
+
+    if [[ ! -d "$dest_dir" ]]; then
+        echo "Error: destination directory '$dest_dir' does not exist" >&2
+        return 1
+    fi
+
+    local filename
+    filename=$(basename -- "$src")
+
+    local name="${filename%.*}"
+    local ext=""
+
+    # Preserve extension if one exists
+    if [[ "$filename" == *.* && "$filename" != .* ]]; then
+        ext=".${filename##*.}"
+        name="${filename%.*}"
+    fi
+
+    local target="$dest_dir/$filename"
+    local seq=1
+
+    while [[ -e "$target" ]]; do
+        target="$dest_dir/${name}-${seq}${ext}"
+        ((seq++))
+    done
+
+    mv -- "$src" "$target"
+}
