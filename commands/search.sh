@@ -20,3 +20,23 @@ d-ftext() { # Search file contents under a path: d-ftext <pattern> [path]
     grep -RIn --exclude-dir=.git "$pattern" "$path"
   fi
 }
+
+d-aisync() {
+
+  local src="$HOME/"
+  local dest="/mnt/c/Users/root/Documents/Agent-Projects/WSL/$WSL_DISTRO_NAME/"
+
+  mkdir -p "$dest"
+
+  rsync -av \
+    --prune-empty-dirs \
+    --delete \
+    --exclude='.*/' \
+    --include='*/' \
+    --include='*.md' \
+    --include='*.MD' \
+    --include='*.Md' \
+    --include='*.mD' \
+    --exclude='*' \
+    "$src" "$dest"
+}
