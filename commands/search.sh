@@ -21,7 +21,7 @@ d-ftext() { # Search file contents under a path: d-ftext <pattern> [path]
   fi
 }
 
-d-aisync() {
+d-aisync() { # Sync Markdown Files from HOME to Windows host location
 
   local src="$HOME/"
   local dest="/mnt/c/Users/root/Documents/Agent-Projects/WSL/$WSL_DISTRO_NAME/"
