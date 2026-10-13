@@ -121,6 +121,7 @@ Shell - PATH inspection and managed PATH entries
   d-path          Print PATH one entry per line with where each is set, marking duplicates and missing directories
   d-mpath-list    List the managed PATH directories saved in the login startup file
   d-mpath-add     Add a directory to PATH permanently, at the front (default) or end
+  d-mpath-here    Add the current directory to PATH permanently, at the front (default) or end
   d-mpath-remove  Remove a managed PATH directory by its d-mpath-list number or its path
 ```
 

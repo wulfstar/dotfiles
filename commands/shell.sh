@@ -403,6 +403,14 @@ d-mpath-add() { # Add a directory to PATH permanently, at the front (default) or
   fi
 }
 
+d-mpath-here() { # Add the current directory to PATH permanently, at the front (default) or end: d-mpath-here [front|end]
+  case "$#:${1:-}" in
+    0:|1:front|1:end) ;;
+    *) printf 'usage: d-mpath-here [front|end]\n' >&2; return 1 ;;
+  esac
+  d-mpath-add "$PWD" "$@"
+}
+
 d-mpath-remove() { # Remove a managed PATH directory by its d-mpath-list number or its path: d-mpath-remove <number|dir>
   local arg="${1:-}" i found=-1 dir
   local -a entries parts kept one origin
