@@ -68,7 +68,12 @@ fi
 
 install_source_line
 
+printf '\nInstalled version: %s (%s)\n' \
+  "$(git -C "$DOTFILES_DIR" describe --tags --always --dirty 2>/dev/null || printf 'unknown')" \
+  "$(git -C "$DOTFILES_DIR" log -1 --format=%cs 2>/dev/null || true)"
+
 printf '\nInstall complete. Next steps:\n'
 printf '  source ~/.bashrc\n'
 printf '  d-help\n'
+printf '  d-version\n'
 printf '  d-status\n'

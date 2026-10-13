@@ -54,12 +54,33 @@ Dotfiles loaded. Type 'd-' then <Tab> to list commands, or run 'd-help'.
 
 Set `DOTFILES_QUIET=1` before sourcing to suppress that message.
 
+## Version
+
+Run `d-version` to see which revision a shell has loaded:
+
+```text
+dotfiles 6b6cd1b (2026-09-25)
+```
+
+The version comes from git (`git describe --tags --always --dirty` plus the
+commit date), so there is no version number to bump. A `-dirty` suffix means the
+clone has uncommitted edits. `d-help` shows the same string in its header.
+
+Tags are optional. Tag a milestone and the output changes to
+`v0.1.0-2-gabc1234` style (tag, commits since the tag, hash):
+
+```bash
+git -C "$DOTFILES_DIR" tag -a v0.1.0 -m "v0.1.0"
+git -C "$DOTFILES_DIR" push origin v0.1.0
+```
+
 ## Commands
 
 Manage this dotfiles repo (these act on `$HOME/.dotfiles`):
 
 ```text
 d-help            List all commands with descriptions
+d-version         Show dotfiles version (git revision and commit date)
 d-edit            Open the dotfiles repo in $EDITOR
 d-path            Print the dotfiles repo path
 d-status          Show dotfiles repo git status

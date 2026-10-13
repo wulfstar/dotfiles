@@ -39,6 +39,20 @@ _dot_repo() {
   [ -d "$DOTFILES_DIR/.git" ] || _dot_die "not a git repo: $DOTFILES_DIR"
 }
 
+# Version is derived from git (tag/hash, -dirty, commit date); nothing to bump.
+_dot_version() {
+  local rev='' date=''
+  if _dot_has git && [ -d "$DOTFILES_DIR/.git" ]; then
+    rev="$(git -C "$DOTFILES_DIR" describe --tags --always --dirty 2>/dev/null)"
+    date="$(git -C "$DOTFILES_DIR" log -1 --format=%cs 2>/dev/null)"
+  fi
+  if [ -n "$rev" ]; then
+    printf '%s (%s)\n' "$rev" "$date"
+  else
+    printf 'unknown\n'
+  fi
+}
+
 # --- Discovery ---------------------------------------------------------------
 
 d-help() { # List all d- commands with descriptions
@@ -49,13 +63,17 @@ d-help() { # List all d- commands with descriptions
     c1=$'\e[36m'   # cyan
     c2=$'\e[32m'   # green
   fi
-  printf 'Dotfiles commands (type "d-" then <Tab> to autocomplete):\n\n'
+  printf 'Dotfiles %s - commands (type "d-" then <Tab> to autocomplete):\n\n' "$(_dot_version)"
   for fn in $(compgen -A function -- d- | sort); do
     desc="$(sed -n "s/^${fn}() { # //p" "$DOTFILES_DIR"/dotfiles.sh "$DOTFILES_DIR"/commands/*.sh 2>/dev/null | head -n1)"
     if (( i % 2 == 0 )); then color="$c1"; else color="$c2"; fi
     printf '%s  %-16s %s%s\n' "$color" "$fn" "${desc:-}" "$reset"
     ((i++))
   done
+}
+
+d-version() { # Show dotfiles version (git revision and commit date)
+  printf 'dotfiles %s\n' "$(_dot_version)"
 }
 
 # --- Load command files ------------------------------------------------------
