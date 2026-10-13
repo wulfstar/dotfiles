@@ -96,10 +96,10 @@ d-ginfo() { # Git summary: branch, upstream, ahead/behind, working tree, pull/pu
     fi
 }
 
-d-update() { # Pull latest changes (fast-forward only)
+d-update() { # Pull the current repository (fast-forward only)
   git pull --ff-only
 }
 
-d-sync() { # Pull with rebase, then push
+d-sync() { # Pull the current repository with rebase, then push
   git pull --rebase && git push
 }

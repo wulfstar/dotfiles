@@ -83,56 +83,51 @@ git -C "$DOTFILES_DIR" push origin v0.1.0
 
 ## Commands
 
-`d-help` is the source of truth; this list mirrors its groups. Run
-`d-help <command>` for the full argument list.
-
-Dotfiles:
+`d-help` prints this list, grouped by command file:
 
 ```text
-d-help [group|command]    List commands by group; with a name, also show usage
-d-version                 Show dotfiles version (git revision and commit date)
+Dotfiles - help and version
+  d-help          List d- commands by group
+  d-version       Show dotfiles version (git revision and commit date)
+
+Crypto - certificates and random data
+  d-certinfo      Show readable certificate information
+  d-certdates     Show certificate validity dates
+  d-tlsinfo       Inspect a remote TLS certificate
+  d-randhex       Generate random hex bytes with openssl
+
+Files - move, sync and remote read
+  d-moveseq       Move a file without overwriting; adds -N suffix on name clash
+  d-aisync        Mirror Markdown files from HOME to the Windows host (WSL; uses rsync --delete)
+  d-rcat          Cat a remote file with sudo over ssh
+
+Git - repository info and sync
+  d-groot         Print the current git repository root
+  d-ginfo         Git summary: branch, upstream, ahead/behind, working tree, pull/push hints
+  d-update        Pull the current repository (fast-forward only)
+  d-sync          Pull the current repository with rebase, then push
+
+Jira - read-only Jira Cloud search
+  d-jira-setup    Create or update ~/.config/jira/env (prompts; token hidden)
+  d-jira-search   Search Jira by JQL
+  d-jira-show     Show one issue
+  d-jira-dupes    Rank possible duplicates
+
+Search - find files and text
+  d-ff            Find files by name under a path
+  d-ftext         Search file contents under a path
 ```
 
-Crypto:
+Arguments are not shown in the full list. Pass a group or command name to see
+them:
 
 ```text
-d-certinfo <cert.pem>      Show readable certificate information
-d-certdates <cert.pem>     Show certificate validity dates
-d-tlsinfo <host> [port]    Inspect a remote TLS certificate
-d-randhex [bytes]          Generate random hex bytes
-```
-
-Files:
-
-```text
-d-moveseq <file> <dest-dir>          Move a file without overwriting; adds -N suffix on name clash
-d-aisync                             Mirror Markdown files from $HOME to the Windows host (WSL; uses rsync --delete)
-d-rcat <user@host> <remote-file>     Cat a remote file with sudo over ssh
-```
-
-Git (these act on the repository in the current directory):
-
-```text
-d-groot     Print the current git repository root
-d-ginfo     Git summary: branch, upstream, ahead/behind, working tree (runs git fetch)
-d-update    Pull the current repository (fast-forward only)
-d-sync      Pull the current repository with rebase, then push
-```
-
-Jira (read-only; settings live in `~/.config/jira/env`):
-
-```text
-d-jira-setup                         Create or update ~/.config/jira/env
-d-jira-search '<JQL>' [options]      Search Jira by JQL
-d-jira-show <KEY> [options]          Show one issue
-d-jira-dupes "<phrase>"... [options] Rank possible duplicates
-```
-
-Search:
-
-```text
-d-ff <pattern> [path]       Find files by name under a path
-d-ftext <pattern> [path]    Search file contents under a path
+$ d-help search
+Search - find files and text
+  d-ff            Find files by name under a path
+                  d-ff <pattern> [path]
+  d-ftext         Search file contents under a path
+                  d-ftext <pattern> [path]
 ```
 
 ## Updating

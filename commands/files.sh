@@ -41,7 +41,7 @@ d-moveseq() { # Move a file without overwriting; adds -N suffix on name clash: d
     mv -- "$src" "$target"
 }
 
-d-aisync() { # Sync Markdown Files from HOME to Windows host location
+d-aisync() { # Mirror Markdown files from HOME to the Windows host (WSL; uses rsync --delete)
 
   local src="$HOME/"
   local dest="/mnt/c/Users/root/Documents/Agent-Projects/WSL/$WSL_DISTRO_NAME/"
