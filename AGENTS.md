@@ -5,7 +5,8 @@
 - `dotfiles.sh` is sourced entrypoint. It exports `DOTFILES_DIR`, defines shared helpers and `d-help`, then sources every `commands/*.sh` file.
 - Public commands are Bash functions named `d-*`; internal helpers use `_dot_*` so command discovery excludes them.
 - Add commands to fitting `commands/<topic>.sh`. No registry or dispatcher update is needed.
-- `d-help` extracts descriptions only from exact declarations shaped like `d-name() { # Description`; declarations without inline comments load but show blank help text.
+- `d-help` extracts descriptions only from exact declarations shaped like `d-name() { # Description`; declarations without inline comments load but show blank help text. An optional `: d-name <args>` suffix on that comment is the usage string, shown only by `d-help <group>` and `d-help <command>`.
+- Each file is one `d-help` group: `dotfiles.sh` first, then `commands/*.sh` alphabetically, commands in file order. First line shaped `# help: Title - summary` names the group; without it the file name is used. Order functions in a file as they should read in help.
 - Version is git-derived (`_dot_version`, shown by `d-version` and the `d-help` header). No version file or constant exists to bump; optional `vX.Y.Z` tags change the output.
 
 ## Verification

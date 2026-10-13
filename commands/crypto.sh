@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# help: Crypto - certificates and random data
+#
 # OpenSSL certificate and crypto helpers.
 
 d-certinfo() { # Show readable certificate information: d-certinfo <cert.pem>

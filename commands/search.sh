@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# help: Search - find files and text
+#
 # File search helpers.
 
 d-ff() { # Find files by name under a path: d-ff <pattern> [path]

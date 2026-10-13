@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# help: Files - move, sync and remote read
+#
 # File move, sync and remote read helpers.
 
 d-moveseq() { # Move a file without overwriting; adds -N suffix on name clash: d-moveseq <file> <dest-dir>

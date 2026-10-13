@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# help: Jira - read-only Jira Cloud search
+#
 # Read-only Jira Cloud helpers.
 #
 # All site-specific settings and credentials live in ~/.config/jira/env

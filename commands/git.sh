@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# help: Git - repository info and sync
+#
 # Git information helpers. These operate on the current directory's repo.
 
 d-groot() { # Print the current git repository root

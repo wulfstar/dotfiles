@@ -40,10 +40,17 @@ Every command starts with `d-`. Type the prefix and press `<Tab>` to list them:
 d-<Tab>
 ```
 
-Or run `d-help` for the same list with one-line descriptions:
+Or run `d-help` for the same list, grouped by topic with one-line descriptions:
 
 ```bash
 d-help
+```
+
+Pass a group or command name to also see usage:
+
+```bash
+d-help jira
+d-help d-ftext
 ```
 
 When sourced by an interactive shell, the environment prints:
@@ -117,6 +124,21 @@ d-greet() { # Print a greeting
 }
 ```
 
+To document arguments, append `: d-greet <args>` to the comment. `d-help` shows
+that usage string only for `d-help <group>` or `d-help d-greet`:
+
+```bash
+d-greet() { # Print a greeting: d-greet [name]
+```
+
+Each file is one `d-help` group, and commands appear in the order they are
+written in the file. Name the group with a `# help:` line near the top of the
+file; without it the file name is used:
+
+```bash
+# help: Git - repository info and sync
+```
+
 That is the only edit. The function loads on your next shell (or after
 `d-reload`), tab-completes as `d-greet`, and appears in `d-help`. There is no
 registration step and no central dispatcher to update.
@@ -137,7 +159,7 @@ d-push
   `d-help`, then sources every `commands/*.sh` file.
 - Each command is a plain bash function named `d-<name>`. Internal helpers use a
   `_dot_` prefix so they stay out of `d-<Tab>` completion.
-- `d-help` lists commands dynamically with `compgen` and reads descriptions from
+- `d-help` reads group titles and descriptions from
   the source files, so there is nothing to keep in sync.
 
 ## Verify
