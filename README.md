@@ -116,6 +116,13 @@ Jira - read-only Jira Cloud search
 Search - find files and text
   d-ff            Find files by name under a path
   d-ftext         Search file contents under a path
+
+Shell - PATH inspection and editing
+  d-path          Print PATH one entry per line, marking duplicates and missing directories
+  d-path-add      Insert a directory into PATH before a position (default: end)
+  d-path-rm       Remove the PATH entry at a position
+  d-path-mv       Move a PATH entry so it lands at a new position
+  d-path-dedupe   Remove duplicate PATH entries, keeping the one nearest position 1
 ```
 
 Arguments are not shown in the full list. Pass a group or command name to see
@@ -171,7 +178,8 @@ That is the only edit. The function loads on your next shell (or after
 in `d-help`. There is no registration step and no central dispatcher to update.
 
 Pick the topic file that fits (`commands/crypto.sh`, `commands/files.sh`,
-`commands/git.sh`, `commands/jira.sh`, `commands/search.sh`) or create a new
+`commands/git.sh`, `commands/jira.sh`, `commands/search.sh`,
+`commands/shell.sh`) or create a new
 `commands/<topic>.sh`. Then commit and push with git:
 
 ```bash
