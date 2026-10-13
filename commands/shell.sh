@@ -2,8 +2,8 @@
 
 # help: Shell - PATH inspection and editing
 #
-# Shell environment helpers. The d-path-* commands change PATH in the current
-# shell only; nothing is written to startup files. Positions are the numbers
+# Shell environment helpers. The d-path-* edit commands change PATH in the current
+# shell only; only d-path-save writes to a startup file. Positions are the numbers
 # that d-path prints.
 
 # Split PATH into the named array, keeping empty entries.
@@ -183,4 +183,46 @@ d-path-dedupe() { # Remove duplicate PATH entries, keeping the one nearest posit
   fi
   _dot_path_set "${kept[@]}"
   printf '\n%d removed, %d entries left\n' "$removed" "${#kept[@]}"
+}
+
+d-path-save() { # Save the current PATH to ~/.bashrc so new shells start with it: d-path-save [file]
+  local file="${1:-$HOME/.bashrc}" tmp count
+  local begin='# >>> dotfiles d-path-save >>>' end='# <<< dotfiles d-path-save <<<'
+  local -a parts
+
+  [ $# -le 1 ] || { printf 'usage: d-path-save [file]\n' >&2; return 1; }
+  [ -e "$file" ] || touch -- "$file" || return 1
+  [ -f "$file" ] && [ -w "$file" ] || { _dot_die "not a writable file: $file"; return 1; }
+
+  if grep -Fqx -- "$begin" "$file" && ! grep -Fqx -- "$end" "$file"; then
+    _dot_die "saved PATH block in $file has no end marker; fix it by hand"
+    return 1
+  fi
+
+  # Drop any earlier block, then append the new one last so it wins over
+  # PATH changes made earlier in the file.
+  tmp="$(mktemp)" || return 1
+  awk -v b="$begin" -v e="$end" '$0 == b { skip = 1; next } $0 == e { skip = 0; next } !skip' "$file" >"$tmp"
+  [ ! -s "$tmp" ] || [ -z "$(tail -n 1 "$tmp")" ] || printf '\n' >>"$tmp"
+  {
+    printf '%s\n' "$begin"
+    printf '# Written by d-path-save on %s. Run it again to replace this block; delete the block to undo.\n' "$(date +%F)"
+    printf 'export PATH=%q\n' "$PATH"
+    printf '%s\n' "$end"
+  } >>"$tmp"
+
+  # Write through the existing file so a symlinked startup file stays a symlink.
+  if cp -p -- "$file" "$file.d-path-save.bak" && cat -- "$tmp" >"$file"; then
+    rm -f -- "$tmp"
+  else
+    rm -f -- "$tmp"
+    _dot_die "could not update $file"
+    return 1
+  fi
+
+  _dot_path_get parts
+  count=${#parts[@]}
+  printf 'saved %d PATH entries to %s\n' "$count" "$(_dot_path_show "$file")"
+  printf 'backup: %s\n' "$(_dot_path_show "$file.d-path-save.bak")"
+  printf 'note: new shells now use this exact PATH; later PATH changes need another d-path-save\n'
 }

@@ -123,6 +123,7 @@ Shell - PATH inspection and editing
   d-path-rm       Remove the PATH entry at a position
   d-path-mv       Move a PATH entry so it lands at a new position
   d-path-dedupe   Remove duplicate PATH entries, keeping the one nearest position 1
+  d-path-save     Save the current PATH to ~/.bashrc so new shells start with it
 ```
 
 Arguments are not shown in the full list. Pass a group or command name to see

@@ -20,4 +20,5 @@
 
 - `install.sh` clones or updates `$DOTFILES_DIR` and modifies `~/.bashrc`; do not use it as routine verification.
 - `d-aisync` mirrors Markdown files from `$HOME` into a WSL Windows path using `rsync --delete`; never invoke casually.
+- `d-path-save` rewrites its marked block in `~/.bashrc` (backup `~/.bashrc.d-path-save.bak`); when testing, pass a scratch file: `d-path-save <file>`.
 - `d-ginfo` runs `git fetch`; use syntax/source checks when network-free verification is required.
