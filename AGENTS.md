@@ -14,7 +14,7 @@
 - Syntax-check all scripts: `bash -n dotfiles.sh install.sh commands/*.sh`
 - Lint when ShellCheck is installed: `shellcheck dotfiles.sh install.sh commands/*.sh`
 - Verify source/discovery without startup banner: `DOTFILES_QUIET=1 bash -c 'source ./dotfiles.sh; d-help'`
-- No tracked test suite or CI config currently exists. `README.md` references nonexistent `test/smoke.sh` and `commands/manage.sh`; do not treat those references as executable truth.
+- No tracked test suite or CI config currently exists.
 
 ## Side Effects
 

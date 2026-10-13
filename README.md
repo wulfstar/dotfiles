@@ -83,34 +83,66 @@ git -C "$DOTFILES_DIR" push origin v0.1.0
 
 ## Commands
 
-Manage this dotfiles repo (these act on `$HOME/.dotfiles`):
+`d-help` is the source of truth; this list mirrors its groups. Run
+`d-help <command>` for the full argument list.
+
+Dotfiles:
 
 ```text
-d-help            List all commands with descriptions
-d-version         Show dotfiles version (git revision and commit date)
-d-edit            Open the dotfiles repo in $EDITOR
-d-path            Print the dotfiles repo path
-d-status          Show dotfiles repo git status
-d-update          Pull latest dotfiles changes (fast-forward only)
-d-add <path>      Stage a dotfiles repo path
-d-commit <msg>    Commit staged dotfiles changes
-d-push            Push dotfiles changes
-d-sync            Pull with rebase, then push
-d-reload          Re-source dotfiles.sh in the current shell
-d-bootstrap       Re-run install.sh
+d-help [group|command]    List commands by group; with a name, also show usage
+d-version                 Show dotfiles version (git revision and commit date)
 ```
 
-General helpers:
+Crypto:
+
+```text
+d-certinfo <cert.pem>      Show readable certificate information
+d-certdates <cert.pem>     Show certificate validity dates
+d-tlsinfo <host> [port]    Inspect a remote TLS certificate
+d-randhex [bytes]          Generate random hex bytes
+```
+
+Files:
+
+```text
+d-moveseq <file> <dest-dir>          Move a file without overwriting; adds -N suffix on name clash
+d-aisync                             Mirror Markdown files from $HOME to the Windows host (WSL; uses rsync --delete)
+d-rcat <user@host> <remote-file>     Cat a remote file with sudo over ssh
+```
+
+Git (these act on the repository in the current directory):
+
+```text
+d-groot     Print the current git repository root
+d-ginfo     Git summary: branch, upstream, ahead/behind, working tree (runs git fetch)
+d-update    Pull the current repository (fast-forward only)
+d-sync      Pull the current repository with rebase, then push
+```
+
+Jira (read-only; settings live in `~/.config/jira/env`):
+
+```text
+d-jira-setup                         Create or update ~/.config/jira/env
+d-jira-search '<JQL>' [options]      Search Jira by JQL
+d-jira-show <KEY> [options]          Show one issue
+d-jira-dupes "<phrase>"... [options] Rank possible duplicates
+```
+
+Search:
 
 ```text
 d-ff <pattern> [path]       Find files by name under a path
 d-ftext <pattern> [path]    Search file contents under a path
-d-groot                     Print the current git repository root
-d-ginfo                     Show a git project summary
-d-certinfo <cert.pem>       Show certificate information
-d-certdates <cert.pem>      Show certificate validity dates
-d-tlsinfo <host> [port]     Inspect a remote TLS certificate
-d-randhex [bytes]           Generate random hex bytes
+```
+
+## Updating
+
+The dotfiles are a plain git clone. Pull, then reload the shell:
+
+```bash
+git -C "$DOTFILES_DIR" pull --ff-only
+source "$DOTFILES_DIR/dotfiles.sh"
+d-version
 ```
 
 ## Adding a command
@@ -140,32 +172,33 @@ file; without it the file name is used:
 ```
 
 That is the only edit. The function loads on your next shell (or after
-`d-reload`), tab-completes as `d-greet`, and appears in `d-help`. There is no
-registration step and no central dispatcher to update.
+`source "$DOTFILES_DIR/dotfiles.sh"`), tab-completes as `d-greet`, and appears
+in `d-help`. There is no registration step and no central dispatcher to update.
 
-Pick the topic file that fits (`commands/git.sh`, `commands/search.sh`,
-`commands/crypto.sh`, `commands/manage.sh`) or create a new
-`commands/<topic>.sh`. Then commit and push from any sourced shell:
+Pick the topic file that fits (`commands/crypto.sh`, `commands/files.sh`,
+`commands/git.sh`, `commands/jira.sh`, `commands/search.sh`) or create a new
+`commands/<topic>.sh`. Then commit and push with git:
 
 ```bash
-d-add commands/git.sh
-d-commit "Add d-greet helper"
-d-push
+git -C "$DOTFILES_DIR" add commands/git.sh
+git -C "$DOTFILES_DIR" commit -m "Add d-greet helper"
+git -C "$DOTFILES_DIR" push
 ```
 
 ## How it works
 
-- `dotfiles.sh` sets `$DOTFILES_DIR`, defines a few `_dot_*` helper functions and
-  `d-help`, then sources every `commands/*.sh` file.
+- `dotfiles.sh` sets `$DOTFILES_DIR`, defines a few `_dot_*` helper functions,
+  `d-help` and `d-version`, then sources every `commands/*.sh` file.
 - Each command is a plain bash function named `d-<name>`. Internal helpers use a
   `_dot_` prefix so they stay out of `d-<Tab>` completion.
-- `d-help` reads group titles and descriptions from
-  the source files, so there is nothing to keep in sync.
+- `d-help` reads group titles and descriptions from the source files, so there
+  is nothing to keep in sync.
 
 ## Verify
 
-Run the smoke test:
+There is no test suite. Check syntax and that everything loads:
 
 ```bash
-bash test/smoke.sh
+bash -n dotfiles.sh install.sh commands/*.sh
+DOTFILES_QUIET=1 bash -c 'source ./dotfiles.sh; d-help'
 ```
