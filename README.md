@@ -117,13 +117,11 @@ Search - find files and text
   d-ff            Find files by name under a path
   d-ftext         Search file contents under a path
 
-Shell - PATH inspection and editing
-  d-path          Print PATH one entry per line, marking duplicates and missing directories
-  d-path-add      Insert a directory into PATH before a position (default: end)
-  d-path-rm       Remove the PATH entry at a position
-  d-path-mv       Move a PATH entry so it lands at a new position
-  d-path-dedupe   Remove duplicate PATH entries, keeping the one nearest position 1
-  d-path-save     Save the current PATH to ~/.bashrc so new shells start with it
+Shell - PATH inspection and managed PATH entries
+  d-path          Print PATH one entry per line with where each is set, marking duplicates and missing directories
+  d-mpath-list    List the managed PATH directories saved in the login startup file
+  d-mpath-add     Add a directory to PATH permanently, at the front (default) or end
+  d-mpath-remove  Remove a managed PATH directory by its d-mpath-list number or its path
 ```
 
 Arguments are not shown in the full list. Pass a group or command name to see
