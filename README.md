@@ -98,7 +98,7 @@ Crypto - certificates and random data
 
 Files - move, sync and remote read
   d-moveseq       Move a file without overwriting; adds -N suffix on name clash
-  d-aisync        Mirror Markdown files from HOME to the Windows host (WSL; uses rsync --delete)
+  d-aisync        Mirror Markdown and YAML files from HOME to the Windows host (WSL; uses rsync --delete)
   d-rcat          Cat a remote file with sudo over ssh
 
 Git - repository info and sync

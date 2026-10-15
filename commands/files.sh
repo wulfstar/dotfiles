@@ -41,14 +41,14 @@ d-moveseq() { # Move a file without overwriting; adds -N suffix on name clash: d
     mv -- "$src" "$target"
 }
 
-d-aisync() { # Mirror Markdown files from HOME to the Windows host (WSL; uses rsync --delete)
+d-aisync() { # Mirror Markdown and YAML files from HOME to the Windows host (WSL; uses rsync --delete)
 
   local src="$HOME/"
   local dest="/mnt/c/Users/root/Documents/Agent-Projects/WSL/$WSL_DISTRO_NAME/"
 
   mkdir -p "$dest"
 
-  rsync -av \
+  rsync -a --info=progress2 \
     --prune-empty-dirs \
     --delete \
     --exclude='.*/' \
@@ -57,6 +57,8 @@ d-aisync() { # Mirror Markdown files from HOME to the Windows host (WSL; uses rs
     --include='*.MD' \
     --include='*.Md' \
     --include='*.mD' \
+    --include='*.[yY][aA][mM][lL]' \
+    --include='*.[yY][mM][lL]' \
     --exclude='*' \
     "$src" "$dest"
 }
