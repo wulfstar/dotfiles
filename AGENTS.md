@@ -21,4 +21,5 @@
 - `install.sh` clones or updates `$DOTFILES_DIR` and modifies `~/.bashrc`; do not use it as routine verification.
 - `d-aisync` mirrors Markdown and YAML files from `$HOME` into a WSL Windows path using `rsync --delete`; never invoke casually.
 - `d-mpath-add`, `d-mpath-here` and `d-mpath-remove` rewrite a marked block in the login startup file (`~/.profile`, or `~/.bash_profile` / `~/.bash_login` when present; backup `<file>.dotfiles.bak`) and change `PATH` in the calling shell. When testing, set `DOTFILES_PROFILE=<scratch file>`. `d-path` and `d-mpath-list` only read.
+- `d-msource-add` and `d-msource-remove` rewrite a marked block in `~/.bashrc` (backup `~/.bashrc.dotfiles.bak`); `d-msource-add` also sources the file in the calling shell. When testing, set `DOTFILES_RC=<scratch file>`. `d-msource-list` only reads.
 - `d-ginfo` runs `git fetch`; use syntax/source checks when network-free verification is required.

@@ -1,15 +1,22 @@
 #!/usr/bin/env bash
 
-# help: Shell - PATH inspection and managed PATH entries
+# help: Shell - PATH inspection, managed PATH entries and managed sourced files
 #
 # d-path only reads PATH. The d-mpath-* commands keep a list of "managed"
 # directories in a marked block at the end of the login startup file
 # (~/.profile unless ~/.bash_profile or ~/.bash_login exists), so the entries
 # survive new shells, and they apply the same change to the current shell.
 # Set DOTFILES_PROFILE to point them at another file, for example when testing.
+#
+# The d-msource-* commands keep a list of files to source in a marked block at
+# the end of ~/.bashrc, so every interactive shell loads them. A file that is
+# missing or unreadable at shell start is skipped quietly. Set DOTFILES_RC to
+# point them at another file, for example when testing.
 
 _DOT_MPATH_BEGIN='# >>> dotfiles managed PATH >>>'
 _DOT_MPATH_END='# <<< dotfiles managed PATH <<<'
+_DOT_MSOURCE_BEGIN='# >>> dotfiles managed source >>>'
+_DOT_MSOURCE_END='# <<< dotfiles managed source <<<'
 
 # Split PATH into the named array, keeping empty entries.
 _dot_path_get() {
@@ -96,57 +103,34 @@ _dot_mpath_file() {
   printf '%s' "$HOME/.profile"
 }
 
-# _dot_mpath_read <array>: load managed entries, each "front<TAB>dir" or "end<TAB>dir".
-_dot_mpath_read() {
-  local -n _dot_out="$1"
-  local file line
-  local re="^_dot_managed_path (front|end) '(.*)'\$"
-  file="$(_dot_mpath_file)"
-  _dot_out=()
-  [ -r "$file" ] || return 0
-  while IFS= read -r line; do
-    [[ "$line" =~ $re ]] && _dot_out+=("${BASH_REMATCH[1]}"$'\t'"${BASH_REMATCH[2]}")
-  done < <(awk -v b="$_DOT_MPATH_BEGIN" -v e="$_DOT_MPATH_END" \
-    '$0 == b { on = 1; next } $0 == e { on = 0 } on' "$file")
+# _dot_block_lines <file> <begin> <end>: print the lines between the markers.
+_dot_block_lines() {
+  [ -r "$1" ] || return 0
+  awk -v b="$2" -v e="$3" '$0 == b { on = 1; next } $0 == e { on = 0 } on' "$1"
 }
 
-# _dot_mpath_write [entry...]: replace the managed block with these entries, or
-# remove the block when there are none. The previous file is kept as a backup.
-_dot_mpath_write() {
-  local file tmp entry
-  file="$(_dot_mpath_file)"
+# _dot_block_write <file> <begin> <end> <label> [body-line...]: replace the
+# marked block in file with the body lines, or remove the block when there are
+# none. The block goes last in the file. The previous file is kept as
+# <file>.dotfiles.bak.
+_dot_block_write() {
+  local file="$1" begin="$2" end="$3" label="$4" tmp
+  shift 4
   [ -e "$file" ] || touch -- "$file" || return 1
   [ -f "$file" ] && [ -w "$file" ] || { _dot_die "not a writable file: $file"; return 1; }
 
-  if grep -Fqx -- "$_DOT_MPATH_BEGIN" "$file" && ! grep -Fqx -- "$_DOT_MPATH_END" "$file"; then
-    _dot_die "managed PATH block in $file has no end marker; fix it by hand"
+  if grep -Fqx -- "$begin" "$file" && ! grep -Fqx -- "$end" "$file"; then
+    _dot_die "$label block in $file has no end marker; fix it by hand"
     return 1
   fi
 
   tmp="$(mktemp)" || return 1
-  awk -v b="$_DOT_MPATH_BEGIN" -v e="$_DOT_MPATH_END" \
+  awk -v b="$begin" -v e="$end" \
     '$0 == b { skip = 1; next } $0 == e { skip = 0; next } !skip' "$file" >"$tmp"
 
-  # The block goes last so it runs after every other PATH change in the file.
-  # It is plain sh, because ~/.profile is not always read by bash.
   if [ $# -gt 0 ]; then
     [ ! -s "$tmp" ] || [ -z "$(tail -n 1 "$tmp")" ] || printf '\n' >>"$tmp"
-    {
-      printf '%s\n' "$_DOT_MPATH_BEGIN"
-      printf '# Written by d-mpath-add and d-mpath-remove (see d-help shell). Edits by hand are lost.\n'
-      printf '_dot_managed_path() {\n'
-      printf '  case ":$PATH:" in\n'
-      printf '    *":$2:"*) ;;\n'
-      printf '    *) if [ "$1" = front ]; then PATH="$2:$PATH"; else PATH="$PATH:$2"; fi ;;\n'
-      printf '  esac\n'
-      printf '}\n'
-      for entry in "$@"; do
-        printf "_dot_managed_path %s '%s'\n" "${entry%%$'\t'*}" "${entry#*$'\t'}"
-      done
-      printf 'unset -f _dot_managed_path\n'
-      printf 'export PATH\n'
-      printf '%s\n' "$_DOT_MPATH_END"
-    } >>"$tmp"
+    printf '%s\n' "$begin" "$@" "$end" >>"$tmp"
   fi
 
   # Write through the existing file so a symlinked startup file stays a symlink.
@@ -157,6 +141,77 @@ _dot_mpath_write() {
     _dot_die "could not update $file"
     return 1
   fi
+}
+
+# _dot_mpath_read <array>: load managed entries, each "front<TAB>dir" or "end<TAB>dir".
+_dot_mpath_read() {
+  local -n _dot_out="$1"
+  local line
+  local re="^_dot_managed_path (front|end) '(.*)'\$"
+  _dot_out=()
+  while IFS= read -r line; do
+    [[ "$line" =~ $re ]] && _dot_out+=("${BASH_REMATCH[1]}"$'\t'"${BASH_REMATCH[2]}")
+  done < <(_dot_block_lines "$(_dot_mpath_file)" "$_DOT_MPATH_BEGIN" "$_DOT_MPATH_END")
+}
+
+# _dot_mpath_write [entry...]: replace the managed block with these entries, or
+# remove the block when there are none.
+_dot_mpath_write() {
+  local entry
+  local -a body=()
+  # The block goes last so it runs after every other PATH change in the file.
+  # It is plain sh, because ~/.profile is not always read by bash.
+  if [ $# -gt 0 ]; then
+    body=(
+      '# Written by d-mpath-add and d-mpath-remove (see d-help shell). Edits by hand are lost.'
+      '_dot_managed_path() {'
+      '  case ":$PATH:" in'
+      '    *":$2:"*) ;;'
+      '    *) if [ "$1" = front ]; then PATH="$2:$PATH"; else PATH="$PATH:$2"; fi ;;'
+      '  esac'
+      '}'
+    )
+    for entry in "$@"; do
+      body+=("_dot_managed_path ${entry%%$'\t'*} '${entry#*$'\t'}'")
+    done
+    body+=('unset -f _dot_managed_path' 'export PATH')
+  fi
+  _dot_block_write "$(_dot_mpath_file)" "$_DOT_MPATH_BEGIN" "$_DOT_MPATH_END" "managed PATH" "${body[@]}"
+}
+
+# Print the interactive startup file that holds the managed source block.
+_dot_msource_file() {
+  printf '%s' "${DOTFILES_RC:-$HOME/.bashrc}"
+}
+
+# _dot_msource_read <array>: load managed sourced files.
+_dot_msource_read() {
+  local -n _dot_out="$1"
+  local line
+  local re="^_dot_managed_source '(.*)'\$"
+  _dot_out=()
+  while IFS= read -r line; do
+    [[ "$line" =~ $re ]] && _dot_out+=("${BASH_REMATCH[1]}")
+  done < <(_dot_block_lines "$(_dot_msource_file)" "$_DOT_MSOURCE_BEGIN" "$_DOT_MSOURCE_END")
+}
+
+# _dot_msource_write [file...]: replace the managed source block with these
+# files, or remove the block when there are none. A missing or unreadable file
+# is skipped quietly at shell start.
+_dot_msource_write() {
+  local entry
+  local -a body=()
+  if [ $# -gt 0 ]; then
+    body=(
+      '# Written by d-msource-add and d-msource-remove (see d-help shell). Edits by hand are lost.'
+      '_dot_managed_source() { [ -f "$1" ] && [ -r "$1" ] && . "$1"; }'
+    )
+    for entry in "$@"; do
+      body+=("_dot_managed_source '$entry'")
+    done
+    body+=('unset -f _dot_managed_source')
+  fi
+  _dot_block_write "$(_dot_msource_file)" "$_DOT_MSOURCE_BEGIN" "$_DOT_MSOURCE_END" "managed source" "${body[@]}"
 }
 
 # _dot_path_origins <entries-array> <origins-array> [unmanaged]: for each entry,
@@ -454,4 +509,109 @@ d-mpath-remove() { # Remove a managed PATH directory by its d-mpath-list number 
   done
   _dot_path_set "${kept[@]}"
   printf 'updated %s; removed from this shell\n' "$(_dot_path_show "$(_dot_mpath_file)")"
+}
+
+# Print the file as an absolute path with "." and ".." resolved in its directory.
+_dot_msource_abs() {
+  local file="$1" dir base
+  [[ "$file" == */* ]] || file="./$file"
+  dir="${file%/*}" base="${file##*/}"
+  [ -n "$dir" ] || dir=/
+  if [ -d "$dir" ]; then
+    dir="$(cd -- "$dir" && pwd)" || return 1
+  elif [[ "$dir" != /* ]]; then
+    dir="$PWD/$dir"
+  fi
+  [ "$dir" = / ] && dir=''
+  printf '%s/%s' "$dir" "$base"
+}
+
+d-msource-list() { # List the files that ~/.bashrc sources through the managed block
+  local -a entries
+  local i file note
+  _dot_msource_read entries
+
+  if (( ${#entries[@]} == 0 )); then
+    printf 'no managed sourced files in %s (add one with d-msource-add <file>)\n' "$(_dot_path_show "$(_dot_msource_file)")"
+    return 0
+  fi
+
+  printf 'Managed sourced files in %s:\n\n' "$(_dot_path_show "$(_dot_msource_file)")"
+  for i in "${!entries[@]}"; do
+    file="${entries[i]}"
+    note=''
+    if [ ! -f "$file" ]; then
+      note='  <- missing'
+    elif [ ! -r "$file" ]; then
+      note='  <- unreadable'
+    fi
+    printf '%3d  %s%s\n' "$((i + 1))" "$(_dot_path_show "$file")" "$note"
+  done
+}
+
+d-msource-add() { # Source a file in every new interactive shell and in this one: d-msource-add <file>
+  local file="${1:-}" entry
+  local -a entries
+
+  [ $# -eq 1 ] && [ -n "$file" ] || { printf 'usage: d-msource-add <file>\n' >&2; return 1; }
+  [ -d "$file" ] && { _dot_die "is a directory: $file"; return 1; }
+  file="$(_dot_msource_abs "$file")" || return 1
+  if [[ "$file" == *\'* || "$file" == *$'\n'* ]]; then
+    _dot_die "file must not contain a single quote or a newline: $file"
+    return 1
+  fi
+  if [ "$file" = "$(_dot_msource_abs "$(_dot_msource_file)")" ]; then
+    _dot_die "refusing to make $file source itself"
+    return 1
+  fi
+
+  _dot_msource_read entries
+  for entry in "${entries[@]}"; do
+    if [ "$entry" = "$file" ]; then
+      printf 'already managed: %s\n' "$(_dot_path_show "$file")"
+      return 0
+    fi
+  done
+
+  entries+=("$file")
+  _dot_msource_write "${entries[@]}" || return 1
+  printf 'managed: %s\n' "$(_dot_path_show "$file")"
+
+  if [ -f "$file" ] && [ -r "$file" ]; then
+    # shellcheck disable=SC1090
+    . "$file"
+    printf 'saved to %s; sourced in this shell\n' "$(_dot_path_show "$(_dot_msource_file)")"
+  else
+    printf 'saved to %s; not sourced now: missing or unreadable (skipped at shell start until it exists)\n' \
+      "$(_dot_path_show "$(_dot_msource_file)")"
+  fi
+}
+
+d-msource-remove() { # Stop sourcing a managed file, by its d-msource-list number or its path: d-msource-remove <number|file>
+  local arg="${1:-}" i found=-1 file
+  local -a entries
+
+  [ $# -eq 1 ] && [ -n "$arg" ] || { printf 'usage: d-msource-remove <number|file>\n' >&2; return 1; }
+
+  _dot_msource_read entries
+  (( ${#entries[@]} )) || { _dot_die "no managed sourced files"; return 1; }
+
+  if [[ "$arg" =~ ^[0-9]+$ ]]; then
+    _dot_path_pos "$arg" "${#entries[@]}" || return 1
+    found=$((10#$arg - 1))
+  else
+    arg="$(_dot_msource_abs "$arg")" || return 1
+    for i in "${!entries[@]}"; do
+      [ "${entries[i]}" = "$arg" ] && found=$i
+    done
+    (( found >= 0 )) || { _dot_die "not a managed sourced file: $arg"; return 1; }
+  fi
+
+  file="${entries[found]}"
+  unset 'entries[found]'
+  _dot_msource_write "${entries[@]}" || return 1
+
+  printf 'removed: %s\n' "$(_dot_path_show "$file")"
+  printf 'updated %s; what it defined stays in this shell until you open a new one\n' \
+    "$(_dot_path_show "$(_dot_msource_file)")"
 }
