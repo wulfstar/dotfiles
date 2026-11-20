@@ -20,7 +20,7 @@ same_repo() {
 
   origin="$(git -C "$DOTFILES_DIR" remote get-url origin 2>/dev/null || true)"
   case "$origin" in
-    "$DOTFILES_HTTPS_REMOTE"|git@github.com:wulfstar/dotfiles.git)
+    "$DOTFILES_HTTPS_REMOTE"|https://github.com/wulfstar/dotfiles|git@github.com:wulfstar/dotfiles.git)
       return 0
       ;;
     *)
