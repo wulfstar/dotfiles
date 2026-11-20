@@ -1,5 +1,12 @@
 # dotfiles
 
+> [!WARNING]
+> **Work in progress.** This is a personal toolkit under active development,
+> shared as-is. Commands may be renamed, changed or removed at any time without
+> notice or deprecation warnings. Feel free to use it, but pin to a specific
+> commit or tag if you need things to stay put, or fork it and make it your own.
+
+
 Useful Linux bash helpers that can be sourced into any shell environment. Every
 command is a single `d-` prefixed function, so you can discover them all with
 tab completion: type `d-` then press `<Tab>`.
